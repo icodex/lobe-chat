@@ -1,9 +1,12 @@
 import { StreamingTextResponse } from 'ai';
 
-import { ChatStreamPayload } from '@/types/openai/chat';
+import { ChatStreamCallbacks, ChatStreamPayload } from './types';
 
 export interface LobeRuntimeAI {
   baseURL?: string;
 
-  chat(payload: ChatStreamPayload): Promise<StreamingTextResponse>;
+  chat(
+    payload: ChatStreamPayload,
+    streamCallbacks?: ChatStreamCallbacks,
+  ): Promise<StreamingTextResponse>;
 }

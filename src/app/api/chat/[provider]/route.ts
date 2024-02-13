@@ -1,3 +1,5 @@
+import { Langfuse } from 'langfuse';
+
 import { getPreferredRegion } from '@/app/api/config';
 import { createErrorResponse } from '@/app/api/errorResponse';
 import { LOBE_CHAT_AUTH_HEADER, OAUTH_AUTHORIZED } from '@/const/auth';
@@ -56,7 +58,39 @@ export const POST = async (req: Request, { params }: { params: { provider: strin
   try {
     const payload = (await req.json()) as ChatStreamPayload;
 
-    return await agentRuntime.chat(payload);
+    let startTime: Date;
+    const langfuse = new Langfuse();
+    const trace = langfuse.trace({
+      input: payload.messages,
+      metadata: { provider: params.provider },
+    });
+
+    return await agentRuntime.chat(payload, {
+      experimental_onToolCall: async (toolCallPayload) => {
+        console.log('toolCallPayload:', toolCallPayload);
+        trace.update({ tags: ['Function Call'] });
+      },
+      onCompletion: async (completion) => {
+        const { messages, model, tools, ...parameters } = payload;
+        trace.generation({
+          endTime: new Date(),
+          input: messages,
+          metadata: { tools },
+          model,
+          modelParameters: parameters as any,
+          output: completion,
+          startTime,
+        });
+
+        trace.update({ output: completion });
+      },
+      onFinal: async () => {
+        await trace.client.shutdownAsync();
+      },
+      onStart: () => {
+        startTime = new Date();
+      },
+    });
   } catch (e) {
     const { errorType, provider, error: errorContent, ...res } = e as ChatCompletionErrorPayload;
 

@@ -1,3 +1,5 @@
+import { OpenAIStreamCallbacks } from 'ai';
+
 export type LLMRoleType = 'user' | 'system' | 'assistant' | 'function';
 
 interface UserMessageContentPartText {
@@ -117,3 +119,5 @@ export interface ChatCompletionTool {
    */
   type: 'function';
 }
+
+export type ChatStreamCallbacks = OpenAIStreamCallbacks;

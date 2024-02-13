@@ -1,6 +1,7 @@
 import { getServerConfig } from '@/config/server';
 import { JWTPayload } from '@/const/auth';
 import {
+  ChatStreamCallbacks,
   ChatStreamPayload,
   LobeAzureOpenAI,
   LobeBedrockAI,
@@ -27,8 +28,8 @@ class AgentRuntime {
     this._runtime = runtime;
   }
 
-  async chat(payload: ChatStreamPayload) {
-    return this._runtime.chat(payload);
+  async chat(payload: ChatStreamPayload, streamCallbacks?: ChatStreamCallbacks) {
+    return this._runtime.chat(payload, streamCallbacks);
   }
 
   static async initializeWithUserPayload(
